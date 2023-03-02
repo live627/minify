@@ -1,21 +1,21 @@
 <?php
 
+namespace MatthiasMullie\Minify\Tests\JS;
+
 use MatthiasMullie\Minify;
+use MatthiasMullie\Minify\Tests\CompatTestCase;
 use MatthiasMullie\Scrapbook\Adapters\MemoryStore;
 use MatthiasMullie\Scrapbook\Psr6\Pool;
 
 /**
  * Tests common functions of abstract Minify class by using JS implementation.
  */
-class AbstractTest extends PHPUnit_Framework_TestCase
+class AbstractTest extends CompatTestCase
 {
-    /**
-     * @test
-     */
-    public function construct()
+    public function testConstruct()
     {
-        $path1 = __DIR__.'/sample/source/script1.js';
-        $path2 = __DIR__.'/sample/source/script2.js';
+        $path1 = __DIR__ . '/sample/source/script1.js';
+        $path2 = __DIR__ . '/sample/source/script2.js';
         $content1 = file_get_contents($path1);
         $content2 = file_get_contents($path2);
 
@@ -29,7 +29,7 @@ class AbstractTest extends PHPUnit_Framework_TestCase
         $minifier = new Minify\JS($content1, $content2);
         $result = $minifier->minify();
 
-        $this->assertEquals($content1.';'.$content2, $result);
+        $this->assertEquals($content1 . ';' . $content2, $result);
 
         // file in constructor
         $minifier = new Minify\JS($path1);
@@ -41,16 +41,13 @@ class AbstractTest extends PHPUnit_Framework_TestCase
         $minifier = new Minify\JS($path1, $path2);
         $result = $minifier->minify();
 
-        $this->assertEquals($content1.';'.$content2, $result);
+        $this->assertEquals($content1 . ';' . $content2, $result);
     }
 
-    /**
-     * @test
-     */
-    public function add()
+    public function testAdd()
     {
-        $path1 = __DIR__.'/sample/source/script1.js';
-        $path2 = __DIR__.'/sample/source/script2.js';
+        $path1 = __DIR__ . '/sample/source/script1.js';
+        $path2 = __DIR__ . '/sample/source/script2.js';
         $content1 = file_get_contents($path1);
         $content2 = file_get_contents($path2);
         $content3 = 'var test=3';
@@ -68,7 +65,7 @@ class AbstractTest extends PHPUnit_Framework_TestCase
         $minifier->add($content2);
         $result = $minifier->minify();
 
-        $this->assertEquals($content1.';'.$content2, $result);
+        $this->assertEquals($content1 . ';' . $content2, $result);
 
         // file in add
         $minifier = new Minify\JS();
@@ -83,33 +80,30 @@ class AbstractTest extends PHPUnit_Framework_TestCase
         $minifier->add($path2);
         $result = $minifier->minify();
 
-        $this->assertEquals($content1.';'.$content2, $result);
+        $this->assertEquals($content1 . ';' . $content2, $result);
 
         // array of files in add
         $minifier = new Minify\JS();
         $minifier->add(array($path1, $path2));
         $result = $minifier->minify();
 
-        $this->assertEquals($content1.';'.$content2, $result);
+        $this->assertEquals($content1 . ';' . $content2, $result);
 
         // array of files + overload in add
         $minifier = new Minify\JS();
         $minifier->add(array($path1, $path2), $content3);
         $result = $minifier->minify();
 
-        $this->assertEquals($content1.';'.$content2.';'.$content3, $result);
+        $this->assertEquals($content1 . ';' . $content2 . ';' . $content3, $result);
 
         $minifier = new Minify\JS();
         $minifier->add($path1, array($path2, $content3));
         $result = $minifier->minify();
 
-        $this->assertEquals($content1.';'.$content2.';'.$content3, $result);
+        $this->assertEquals($content1 . ';' . $content2 . ';' . $content3, $result);
     }
 
-    /**
-     * @test
-     */
-    public function loadBigString()
+    public function testLoadBigString()
     {
         // content greater than PHP_MAXPATHLEN
         // https://github.com/matthiasmullie/minify/issues/90
@@ -120,10 +114,7 @@ class AbstractTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($minifier->minify(), $content);
     }
 
-    /**
-     * @test
-     */
-    public function loadOpenBaseDirRestricted()
+    public function testLoadOpenBaseDirRestricted()
     {
         if (!function_exists('pcntl_fork') || defined('HHVM_VERSION')) {
             $this->markTestSkipped("Can't fork, skip open_basedir test");
@@ -141,7 +132,7 @@ class AbstractTest extends PHPUnit_Framework_TestCase
             // can't fork, ignore this test...
         } elseif ($pid === 0) {
             // https://github.com/matthiasmullie/minify/issues/111
-            ini_set('open_basedir', __DIR__.'/../..');
+            ini_set('open_basedir', __DIR__ . '/../..');
 
             // instead of displaying warnings & moving to the next test, just
             // quit with the error code; the other thread will pick it up
@@ -166,14 +157,11 @@ class AbstractTest extends PHPUnit_Framework_TestCase
         }
     }
 
-    /**
-     * @test
-     */
-    public function save()
+    public function testSave()
     {
-        $path = __DIR__.'/sample/source/script1.js';
+        $path = __DIR__ . '/sample/source/script1.js';
         $content = file_get_contents($path);
-        $savePath = __DIR__.'/sample/target/script1.js';
+        $savePath = __DIR__ . '/sample/target/script1.js';
 
         $minifier = new Minify\JS($path);
         $minifier->minify($savePath);
@@ -181,48 +169,39 @@ class AbstractTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(file_get_contents($savePath), $content);
     }
 
-    /**
-     * @test
-     *
-     * @expectedException MatthiasMullie\Minify\Exceptions\IOException
-     */
-    public function checkFileOpenFail()
+    public function testCheckFileOpenFail()
     {
+        $this->expectException('MatthiasMullie\Minify\Exceptions\IOException');
+
         $minifier = new Minify\JS();
         $wrongPath = '';
 
-        $object = new ReflectionObject($minifier);
+        $object = new \ReflectionObject($minifier);
         $method = $object->getMethod('openFileForWriting');
         $method->setAccessible(true);
 
         $method->invokeArgs($minifier, array($wrongPath));
     }
 
-    /**
-     * @test
-     *
-     * @expectedException MatthiasMullie\Minify\Exceptions\IOException
-     */
-    public function checkFileWriteFail()
+    public function testCheckFileWriteFail()
     {
+        $this->expectException('MatthiasMullie\Minify\Exceptions\IOException');
+
         $minifier = new Minify\JS();
         $wrongPath = '';
 
-        $object = new ReflectionObject($minifier);
+        $object = new \ReflectionObject($minifier);
         $method = $object->getMethod('writeToFile');
         $method->setAccessible(true);
 
         $method->invokeArgs($minifier, array($wrongPath, ''));
     }
 
-    /**
-     * @test
-     */
-    public function gzip()
+    public function testGzip()
     {
-        $path = __DIR__.'/sample/source/script1.js';
+        $path = __DIR__ . '/sample/source/script1.js';
         $content = file_get_contents($path);
-        $savePath = __DIR__.'/sample/target/script1.js.gz';
+        $savePath = __DIR__ . '/sample/target/script1.js.gz';
 
         $minifier = new Minify\JS($path);
         $minifier->gzip($savePath, 9);
@@ -230,12 +209,9 @@ class AbstractTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(file_get_contents($savePath), gzencode($content, 9, FORCE_GZIP));
     }
 
-    /**
-     * @test
-     */
-    public function cache()
+    public function testCache()
     {
-        $path = __DIR__.'/sample/source/script1.js';
+        $path = __DIR__ . '/sample/source/script1.js';
         $content = file_get_contents($path);
 
         $cache = new MemoryStore();
