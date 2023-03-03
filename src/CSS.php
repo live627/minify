@@ -628,14 +628,6 @@ class CSS extends Minify
     }
 
     /**
-     * Strip comments from source code.
-     */
-    protected function stripComments()
-    {
-        $this->stripMultilineComments();
-    }
-
-    /**
      * Strip whitespace.
      *
      * @param string $content The CSS content to strip the whitespace for

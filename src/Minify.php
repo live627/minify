@@ -263,7 +263,7 @@ abstract class Minify
     /**
      * Both JS and CSS use the same form of multi-line comment, so putting the common code here.
      */
-    protected function stripMultilineComments()
+    protected function stripComments()
     {
         // First extract comments we want to keep, so they can be restored later
         // PHP only supports $this inside anonymous functions since 5.4

@@ -198,7 +198,7 @@ class JS extends Minify
      */
     protected function stripComments()
     {
-        $this->stripMultilineComments();
+        parent::stripComments();
 
         // single-line comments
         $this->registerPattern('/\/\/.*$/m', '');
